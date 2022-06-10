@@ -7,7 +7,11 @@ module.exports = [
       enabled: true,
       credentials: true,
       headers: ["Content-Type", "*"],
-      origin: ["http://localhost:3000", "http://helloscreen.app"],
+      origin: [
+        "http://localhost:1337",
+        "http://localhost:3000",
+        "https://helloscreen.app",
+      ],
     },
   },
   "strapi::poweredBy",
