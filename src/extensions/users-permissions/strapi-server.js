@@ -8,17 +8,15 @@
 
 /* eslint-disable no-useless-escape */
 const directory = "@strapi/plugin-users-permissions/server/controllers";
-const crypto = require("crypto");
 const _ = require("lodash");
 const utils = require("@strapi/utils");
 const { getService } = require(`${directory}/../utils`);
 const {
   validateCallbackBody,
   validateRegisterBody,
-  validateSendEmailConfirmationBody,
 } = require(`${directory}/validation/auth`);
 
-const { getAbsoluteAdminUrl, getAbsoluteServerUrl, sanitize } = utils;
+const { sanitize } = utils;
 const { ApplicationError, ValidationError } = utils.errors;
 
 const setCookie = (jwt, ctx) => {
@@ -44,6 +42,35 @@ const sanitizeUser = (user, ctx) => {
 };
 
 module.exports = (plugin) => {
+  plugin.services.jwt.getToken = (ctx) => {
+    let token;
+    console.log("getToken");
+    if (
+      ctx.request &&
+      ctx.request.header &&
+      !ctx.request.header.authorization
+    ) {
+      const token = ctx.cookies.get("token");
+      if (token) {
+        ctx.request.header.authorization = "Bearer " + token;
+      }
+    }
+
+    if (ctx.request && ctx.request.header && ctx.request.header.authorization) {
+      const parts = ctx.request.header.authorization.split(/\s+/);
+
+      if (parts[0].toLowerCase() !== "bearer" || parts.length !== 2) {
+        return null;
+      }
+
+      token = parts[1];
+    } else {
+      return null;
+    }
+
+    return this.verify(token);
+  };
+
   plugin.controllers.auth.callback = async (ctx) => {
     const provider = ctx.params.provider || "local";
     const params = ctx.request.body;
@@ -111,6 +138,7 @@ module.exports = (plugin) => {
         });
         setCookie(jwt, ctx);
         ctx.send({
+          status: "Authenticated",
           user: await sanitizeUser(user, ctx),
         });
       }
@@ -125,6 +153,7 @@ module.exports = (plugin) => {
         const jwt = getService("jwt").issue({ id: user.id });
         setCookie(jwt, ctx);
         ctx.send({
+          status: "Authenticated",
           user: await sanitizeUser(user, ctx),
         });
       } catch (error) {
@@ -158,6 +187,7 @@ module.exports = (plugin) => {
       const jwt = getService("jwt").issue({ id: user.id });
       setCookie(jwt, ctx);
       ctx.send({
+        status: "Authenticated",
         user: await sanitizeUser(user, ctx),
       });
     } else if (
@@ -258,6 +288,7 @@ module.exports = (plugin) => {
       setCookie(jwt, ctx);
 
       return ctx.send({
+        status: "Authenticated",
         user: sanitizedUser,
       });
     } catch (err) {
@@ -298,6 +329,7 @@ module.exports = (plugin) => {
     if (returnUser) {
       setCookie(jwt, ctx);
       ctx.send({
+        status: "Authenticated",
         user: await sanitizeUser(user, ctx),
       });
     } else {
