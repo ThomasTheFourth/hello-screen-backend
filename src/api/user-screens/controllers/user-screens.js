@@ -7,10 +7,8 @@
 module.exports = {
   getUserScreens: async (ctx, next) => {
     const user = ctx.state.user;
-    // console.log(ctx.cookies.get("token"));
+    debugger;
     console.log(user);
-    // console.log(JSON.stringify(ctx.state, null, 2));
-    // console.log(ctx.request.header.authorization);
     if (!user) {
       return ctx.badRequest(null, [
         { messages: [{ id: "No authorization header was found" }] },
