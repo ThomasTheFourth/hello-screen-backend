@@ -5,30 +5,21 @@
  */
 
 module.exports = {
-  getUserScreens: async (ctx, next) => {
+  getUserScreens: async (ctx) => {
     const user = ctx.state.user;
-    debugger;
+
     if (!user) {
       return ctx.badRequest(null, [
         { messages: [{ id: "No authorization header was found" }] },
       ]);
     }
 
-    const data = strapi.entityService
+    strapi.entityService
       .findMany("api::screen.screen", {
-        filter: { "User.id": user.id },
-        populate: ["User"],
+        owner: user.id,
       })
       .then((result) => {
-        console.log(result);
+        ctx.send(result);
       });
-    // const data = await strapi.services.screens.find({ user: user.id });
-    console.log(data);
-
-    if (!data) {
-      return ctx.notFound();
-    }
-
-    ctx.send(data);
   },
 };
