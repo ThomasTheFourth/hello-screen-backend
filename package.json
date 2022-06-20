@@ -2,9 +2,9 @@
   "name": "hello-screen-backend",
   "private": true,
   "version": "0.1.0",
-  "description": "A Strapi application",
+  "description": "Hello Screen Backend",
   "scripts": {
-    "develop": "node --inspect=0.0.0.0:9229 ./node_modules/.bin/strapi dev",
+    "develop": "nvm use < .nvmrc; node --inspect=0.0.0.0:9229 ./node_modules/.bin/strapi dev",
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi",

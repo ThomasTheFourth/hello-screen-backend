@@ -7,6 +7,7 @@
 module.exports = {
   getUserScreens: async (ctx) => {
     const user = ctx.state.user;
+    console.log(JSON.stringify(user));
 
     if (!user) {
       return ctx.badRequest(null, [

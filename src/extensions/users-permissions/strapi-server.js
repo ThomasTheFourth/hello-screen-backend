@@ -21,7 +21,7 @@ const { ApplicationError, ValidationError } = utils.errors;
 
 const setCookie = (jwt, ctx) => {
   ctx.cookies.set("token", jwt, {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production" ? true : false,
     maxAge: 1000 * 60 * 60 * 24 * 14, // 14 Day Age
     domain:
@@ -42,35 +42,6 @@ const sanitizeUser = (user, ctx) => {
 };
 
 module.exports = (plugin) => {
-  plugin.services.jwt.getToken = (ctx) => {
-    let token;
-    console.log("getToken");
-    if (
-      ctx.request &&
-      ctx.request.header &&
-      !ctx.request.header.authorization
-    ) {
-      const token = ctx.cookies.get("token");
-      if (token) {
-        ctx.request.header.authorization = "Bearer " + token;
-      }
-    }
-
-    if (ctx.request && ctx.request.header && ctx.request.header.authorization) {
-      const parts = ctx.request.header.authorization.split(/\s+/);
-
-      if (parts[0].toLowerCase() !== "bearer" || parts.length !== 2) {
-        return null;
-      }
-
-      token = parts[1];
-    } else {
-      return null;
-    }
-
-    return this.verify(token);
-  };
-
   plugin.controllers.auth.callback = async (ctx) => {
     const provider = ctx.params.provider || "local";
     const params = ctx.request.body;
