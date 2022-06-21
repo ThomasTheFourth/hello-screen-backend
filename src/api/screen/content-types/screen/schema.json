@@ -8,17 +8,51 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
-    "Title": {
+    "title": {
       "type": "string"
     },
-    "User": {
+    "owner": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "fontSize": {
+      "type": "integer"
+    },
+    "image": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::image.image"
+    },
+    "fontColor": {
+      "type": "string"
+    },
+    "fontFamily": {
+      "type": "string"
+    },
+    "textXPercentage": {
+      "type": "decimal"
+    },
+    "textYPercentage": {
+      "type": "decimal"
+    },
+    "textSizeHeightPercentage": {
+      "type": "decimal"
+    },
+    "textSizeWidthPercentage": {
+      "type": "decimal"
+    },
+    "textValue": {
+      "type": "string"
+    },
+    "screen_image": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::screen-image.screen-image"
     }
   }
 }

@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "screen_images",
+  "info": {
+    "singularName": "screen-image",
+    "pluralName": "screen-images",
+    "displayName": "screenImage"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}
