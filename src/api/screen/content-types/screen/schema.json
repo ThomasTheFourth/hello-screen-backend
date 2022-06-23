@@ -49,7 +49,7 @@
     "textValue": {
       "type": "string"
     },
-    "screen_image": {
+    "screenImage": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::screen-image.screen-image"

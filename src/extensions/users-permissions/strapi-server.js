@@ -21,7 +21,7 @@ const { ApplicationError, ValidationError } = utils.errors;
 
 const setCookie = (jwt, ctx) => {
   ctx.cookies.set("token", jwt, {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === "production" ? true : false,
     maxAge: 1000 * 60 * 60 * 24 * 14, // 14 Day Age
     domain:
