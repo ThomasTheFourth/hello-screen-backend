@@ -10,9 +10,7 @@ const puppeteer = require("puppeteer");
 const FormData = require("form-data");
 const fetch = require("isomorphic-fetch");
 const fs = require("fs");
-const {
-  default: entityService,
-} = require("@strapi/strapi/lib/services/entity-service");
+
 module.exports = createCoreController("api::screen.screen", ({ strapi }) => ({
   async create(ctx) {
     const response = await super.create(ctx);
@@ -41,61 +39,62 @@ const updateRenderedScreen = async (ctx, id) => {
   const page = await browser.newPage();
   await page.goto(`http://localhost:3000/screens/renderer/${id}`);
 
-  setTimeout(async () => {
-    const fileName = `rendered-image-${id}.png`;
+  const fileName = `rendered-image-${id}.png`;
 
-    await page.screenshot({ path: `./public/temp/${fileName}` });
+  const tempFile = `./public/temp/${fileName}`;
 
-    const screen = await strapi.entityService.findOne(
-      "api::screen.screen",
-      id,
+  await page.screenshot({ path: tempFile });
+
+  const screen = await strapi.entityService.findOne("api::screen.screen", id, {
+    populate: ["screenImage"],
+  });
+
+  const form = new FormData();
+
+  form.append(
+    "files",
+    fs.createReadStream(`./public/temp/${fileName}`),
+    fileName
+  );
+
+  await fetch("http://localhost:1337/api/upload", {
+    method: "post",
+    body: form,
+    headers: {
+      cookie: `token=${ctx.cookies.get("token")}`,
+    },
+  });
+
+  const images = await strapi.entityService.findMany("plugin::upload.file", {
+    filters: {
+      name: fileName,
+    },
+  });
+
+  let screenImage;
+  if (screen.screenImage) {
+    await strapi.entityService.delete("plugin::upload.file", images[0].id);
+    images.shift();
+    await strapi.entityService.update(
+      "api::screen-image.screen-image",
+      screen.screenImage.id,
       {
-        populate: ["screenImage"],
+        data: { image: images[0] },
       }
     );
-
-    let file = await fetch(`http://localhost:1337/temp/${fileName}`).then((r) =>
-      r.blob()
+  } else {
+    screenImage = await strapi.entityService.create(
+      "api::screen-image.screen-image",
+      {
+        data: { image: images[0] },
+      }
     );
-
-    const form = new FormData();
-
-    form.append(
-      "files",
-      fs.createReadStream(`./public/temp/${fileName}`),
-      fileName
-    );
-
-    const response = await fetch("http://localhost:1337/api/upload", {
-      method: "post",
-      body: form,
-      headers: {
-        cookie: `token=${ctx.cookies.get("token")}`,
-      },
+    await strapi.entityService.update("api::screen.screen", screen.id, {
+      data: { screenImage: screenImage },
     });
+  }
 
-    console.log(response.body);
+  fs.unlinkSync(tempFile);
 
-    const newImage = await strapi.entityService.findMany(
-      "plugin::upload.content-api",
-      {
-        filters: { title: "Hello World" },
-      }
-    );
-    console.log(newImage);
-    if (newImage.screenImage) {
-    } else {
-      console.log("here");
-      console.log(newImage.headers);
-      console.log(screen);
-      // const newScreenImage = await strapi.entityService.create(
-      //   "api::screen-image.screen-image",
-      //   {
-      //     data: { media: newImage.data.id },
-      //   }
-      // );
-    }
-
-    await browser.close();
-  }, 1000);
+  await browser.close();
 };
