@@ -14,14 +14,13 @@ const fs = require("fs");
 module.exports = createCoreController("api::screen.screen", ({ strapi }) => ({
   async create(ctx) {
     const response = await super.create(ctx);
-    updateRenderedScreen(ctx, response.data.id);
+    await updateRenderedScreen(ctx, response.data.id);
     return response;
   },
 
   async update(ctx) {
     const response = await super.update(ctx);
-    // console.log(response);
-    updateRenderedScreen(ctx, response.data.id);
+    await updateRenderedScreen(ctx, response.data.id);
     return response;
   },
 }));
@@ -44,6 +43,7 @@ const updateRenderedScreen = async (ctx, id) => {
   const tempFile = `./public/temp/${fileName}`;
 
   await page.screenshot({ path: tempFile });
+  await browser.close();
 
   const screen = await strapi.entityService.findOne("api::screen.screen", id, {
     populate: ["screenImage"],
@@ -71,7 +71,6 @@ const updateRenderedScreen = async (ctx, id) => {
     },
   });
 
-  let screenImage;
   if (screen.screenImage) {
     await strapi.entityService.delete("plugin::upload.file", images[0].id);
     images.shift();
@@ -83,7 +82,7 @@ const updateRenderedScreen = async (ctx, id) => {
       }
     );
   } else {
-    screenImage = await strapi.entityService.create(
+    const screenImage = await strapi.entityService.create(
       "api::screen-image.screen-image",
       {
         data: { image: images[0] },
@@ -95,6 +94,4 @@ const updateRenderedScreen = async (ctx, id) => {
   }
 
   fs.unlinkSync(tempFile);
-
-  await browser.close();
 };

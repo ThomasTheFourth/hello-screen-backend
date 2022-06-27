@@ -17,8 +17,8 @@ module.exports = {
 
     strapi.entityService
       .findMany("api::screen.screen", {
-        owner: user.id,
-        populate: ["image"],
+        filter: { data: { owner: user } },
+        populate: { screenImage: { populate: "image" } },
       })
       .then((result) => {
         ctx.send(result);
